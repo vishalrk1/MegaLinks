@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:onikiri_ui/HomePage/homePage_screen.dart';
+import 'package:onikiri_ui/DataProvider/DataUploader.dart';
 import 'package:onikiri_ui/Input%20Screens/SubmitData_Screen.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 import 'package:onikiri_ui/adds/ad_state.dart';
+import 'package:onikiri_ui/helpers/Submit_Sucessful_Dialog.dart';
 import 'package:provider/provider.dart';
 
 class TutorialSubmitionScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
   var _isLoading = false;
 
   Map<String, dynamic> data = {
-    'channel name': '',
+    'title': '',
     'link': '',
     'category': '',
   };
@@ -62,14 +62,11 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
     super.dispose();
   }
 
-  CollectionReference _ref;
-  @override
-  void initState() {
-    super.initState();
-    _ref = FirebaseFirestore.instance.collection('SubmitedData');
-  }
+// saving form.............................
+  void _saveForm(BuildContext context) {
+    final dataUploader =
+        Provider.of<DataUploadProvider>(context, listen: false);
 
-  void _saveForm() {
     final isValid = _form.currentState.validate();
     if (!isValid) {
       return;
@@ -78,31 +75,14 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
     setState(() {
       _isLoading = true;
     });
-    _ref.add(data).then(
-      (value) {
-        // Navigator.of(context).pop();
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Submited successfully'),
-            content: Text(
-                """Thank you for helping us and sharing your tutorials with everyone. our mods will add your pack shortly"""),
-            actions: <Widget>[
-              // ignore: deprecated_member_use
-              FlatButton(
-                  onPressed: () {
-                    if (_interstitialAd.show() != null) {
-                      _interstitialAd.show();
-                    }
-                    Navigator.of(context)
-                        .pushReplacementNamed(HomePageScreen.routeName);
-                  },
-                  child: Text('Okay'))
-            ],
+    dataUploader.uploadTutorial(data).then(
+          (value) => showDialog(
+            context: context,
+            builder: (ctx) => SubmitedAlertDialog(
+              showAd: _interstitialAd,
+            ),
           ),
         );
-      },
-    );
     setState(() {
       _isLoading = false;
     });
@@ -195,13 +175,13 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
               ),
 // first text field.......................................................................................................
               TextFormField(
-                decoration: InputDecoration(labelText: 'Channel Name'),
+                decoration: InputDecoration(labelText: 'Tutorial Title'),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_titleFocusNode);
                 },
                 onSaved: (value) {
-                  data['channel name'] = value;
+                  data['title'] = value;
                 },
                 validator: (value) {
                   if (value.isEmpty) {
@@ -279,9 +259,8 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
                   color: Colors.amber[200],
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 40),
                   onPressed: () {
-                    // Navigator.of(context).pop();
                     data['category'] = _typeSelected;
-                    _saveForm();
+                    _saveForm(context);
                   },
                 ),
               ),

@@ -1,56 +1,80 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:onikiri_ui/DataProvider/DataUploader.dart';
-import 'package:onikiri_ui/HomePage/homePage_screen.dart';
-import 'package:onikiri_ui/Input%20Screens/SubmitData_Screen.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 import 'package:onikiri_ui/adds/ad_state.dart';
-import 'package:onikiri_ui/models/ScenePack_model.dart';
+import 'package:onikiri_ui/helpers/Submit_Sucessful_Dialog.dart';
 import 'package:provider/provider.dart';
 
-class ScenePackSubmitionScreen extends StatefulWidget {
-  static const routName = '/submition-form';
+import 'SubmitData_Screen.dart';
+
+class PfSubmissionScreen extends StatefulWidget {
+  static const routName = '/pf-submission';
+  PfSubmissionScreen({Key key}) : super(key: key);
+
   @override
-  _ScenePackSubmitionScreenState createState() =>
-      _ScenePackSubmitionScreenState();
+  _PfSubmissionScreenState createState() => _PfSubmissionScreenState();
 }
 
-class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
+class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
   final _titleFocusNode = FocusNode();
-  final _imageFocusNode = FocusNode();
-  final _linkFocusNode = FocusNode();
+  final _editlinkFocusNode = FocusNode();
+  final _pflinkFocusNode = FocusNode();
+  final _creditFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
-  BannerAd sceneBanner;
+  String _typeSelected = '';
+  BannerAd tutBanner;
   InterstitialAd _interstitialAd;
-  ScenePackModel newModel;
 
   var _isLoading = false;
 
   Map<String, dynamic> data = {
     'title': '',
-    'link': '',
-    'image': '',
+    'editlink': '',
+    'pflink': '',
     'credit': '',
+    'category': '',
   };
+
+  Widget _buildContactType(String title) {
+    return InkWell(
+      child: Container(
+        height: 40,
+        width: 150,
+        decoration: BoxDecoration(
+          color: _typeSelected == title ? Colors.green : Colors.purple,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+                fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          _typeSelected = title;
+        });
+      },
+    );
+  }
 
   @override
   void dispose() {
     _titleFocusNode.dispose();
-    _linkFocusNode.dispose();
+    _editlinkFocusNode.dispose();
+    _pflinkFocusNode.dispose();
+    _creditFocusNode.dispose();
     super.dispose();
   }
 
-  CollectionReference _ref;
-  @override
-  void initState() {
-    super.initState();
-    _ref = FirebaseFirestore.instance.collection('SubmitedData');
-  }
-
-  void _saveForm(BuildContext context, ScenePackModel sceneModel) {
-    final uploadProvider =
+// saving form.............................
+  void _saveForm(BuildContext context) {
+    final dataUploader =
         Provider.of<DataUploadProvider>(context, listen: false);
+
     final isValid = _form.currentState.validate();
     if (!isValid) {
       return;
@@ -59,57 +83,14 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
     setState(() {
       _isLoading = true;
     });
-    uploadProvider.uploadScenePack(data)
-      ..then(
-        (value) {
-          showDialog(
+    dataUploader.uploadProjectFile(data).then(
+          (value) => showDialog(
             context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text('Submited successfully'),
-              content: Text(
-                  """Thank you for helping us and sharing your packs with everyone. our mods will add your pack shortly"""),
-              actions: <Widget>[
-                // ignore: deprecated_member_use
-                FlatButton(
-                    onPressed: () {
-                      if (_interstitialAd.show() != null) {
-                        _interstitialAd.show();
-                      }
-                      Navigator.of(context)
-                          .pushReplacementNamed(HomePageScreen.routeName);
-                    },
-                    child: Text('Okay'))
-              ],
+            builder: (ctx) => SubmitedAlertDialog(
+              showAd: _interstitialAd,
             ),
-          );
-        },
-      );
-
-    // _ref.add(data).then(
-    //   (value) {
-    //     // Navigator.of(context).pop();
-    //     showDialog(
-    //       context: context,
-    //       builder: (ctx) => AlertDialog(
-    //         title: Text('Submited successfully'),
-    //         content: Text(
-    //             """Thank you for helping us and sharing your packs with everyone. our mods will add your pack shortly"""),
-    //         actions: <Widget>[
-    //           // ignore: deprecated_member_use
-    //           FlatButton(
-    //               onPressed: () {
-    //                 if (_interstitialAd.show() != null) {
-    //                   _interstitialAd.show();
-    //                 }
-    //                 Navigator.of(context)
-    //                     .pushReplacementNamed(HomePageScreen.routeName);
-    //               },
-    //               child: Text('Okay'))
-    //         ],
-    //       ),
-    //     );
-    //   },
-    // );
+          ),
+        );
     setState(() {
       _isLoading = false;
     });
@@ -119,15 +100,15 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final adState1 = Provider.of<AdState>(context);
+    final adState = Provider.of<AdState>(context);
     final adProvider = Provider.of<AdMob>(context);
-    adState1.initialization.then((status) {
+    adState.initialization.then((status) {
       setState(() {
-        sceneBanner = BannerAd(
+        tutBanner = BannerAd(
           adUnitId: adProvider.bannerAd,
-          size: AdSize.largeBanner,
+          size: AdSize.banner,
           request: AdRequest(),
-          listener: adState1.adListener,
+          listener: adState.adListener,
         )..load();
       });
     });
@@ -167,7 +148,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
         ),
         backgroundColor: Color(0xFF7A9BEE),
         elevation: 0.0,
-        title: Text('Scene Packs',
+        title: Text('Tutorials',
             style: TextStyle(
                 fontFamily: 'Montserrat', fontSize: 18.0, color: Colors.white)),
         centerTitle: true,
@@ -189,7 +170,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
               Padding(
                 padding: EdgeInsets.only(top: 25),
                 child: Text(
-                  'Submit Scene Pack',
+                  'Submit Tutorial Links',
                   style: TextStyle(
                       fontFamily: 'Montserrat',
                       color: Colors.black,
@@ -202,10 +183,10 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
               ),
 // first text field.......................................................................................................
               TextFormField(
-                decoration: InputDecoration(labelText: 'Character Name'),
+                decoration: InputDecoration(labelText: 'Project Name'),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_titleFocusNode);
+                  FocusScope.of(context).requestFocus(_editlinkFocusNode);
                 },
                 onSaved: (value) {
                   data['title'] = value;
@@ -222,15 +203,14 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
               ),
 // Second text field.......................................................................................................
               TextFormField(
-                decoration: InputDecoration(labelText: 'Scene Pack Link'),
+                decoration: InputDecoration(labelText: 'Edit Link'),
                 textInputAction: TextInputAction.next,
-                focusNode: _titleFocusNode,
+                focusNode: _editlinkFocusNode,
                 onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_imageFocusNode);
+                  FocusScope.of(context).requestFocus(_pflinkFocusNode);
                 },
                 onSaved: (value) {
-                  data['link'] = value;
-                  // newModel.link = value;
+                  data['editlink'] = value;
                 },
                 validator: (value) {
                   if (value.isEmpty) {
@@ -241,17 +221,17 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   }
                   return null;
                 },
-              ),
-              SizedBox(
-                height: 10,
               ),
 // third text field.......................................................................................................
               TextFormField(
-                decoration: InputDecoration(labelText: 'Character Image Link'),
+                decoration: InputDecoration(labelText: 'Project File Link'),
                 textInputAction: TextInputAction.next,
-                focusNode: _imageFocusNode,
+                focusNode: _pflinkFocusNode,
                 onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_linkFocusNode);
+                  FocusScope.of(context).requestFocus(_creditFocusNode);
+                },
+                onSaved: (value) {
+                  data['pflink'] = value;
                 },
                 validator: (value) {
                   if (value.isEmpty) {
@@ -260,40 +240,51 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   if (!value.startsWith('http') && !value.startsWith('https')) {
                     return 'Please enter a valid URL.';
                   }
-                  if (!value.endsWith('png') && !value.endsWith('jpg')) {
-                    return 'Please enter a valid URL.';
-                  }
                   return null;
                 },
-                onSaved: (value) {
-                  data['image'] = value;
-                },
               ),
-              SizedBox(
-                height: 10,
-              ),
-// fourth text field.......................................................................................................
+// first text field.......................................................................................................
               TextFormField(
                 decoration: InputDecoration(labelText: 'Credits'),
                 textInputAction: TextInputAction.next,
-                focusNode: _linkFocusNode,
+                focusNode: _creditFocusNode,
                 onSaved: (value) {
                   data['credit'] = value;
                 },
                 validator: (value) {
                   if (value.isEmpty) {
-                    return 'Please Entre Credits for this Pack';
+                    return 'Please Entre Something';
                   }
                   return null;
                 },
               ),
+              SizedBox(
+                height: 10,
+              ),
+// Select category...........................................................................................................
+              SizedBox(
+                height: 15,
+              ),
+              Container(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildContactType('After Effects'),
+                    SizedBox(width: 10),
+                    _buildContactType('Sony Vegas Pro'),
+                    SizedBox(width: 10),
+                    _buildContactType('Alight Motion'),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+// Button......................................................................................
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.only(
-                  right: 10,
-                  left: 10,
-                  top: 50,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 // ignore: deprecated_member_use
                 child: RaisedButton(
                   child: Text(
@@ -310,18 +301,20 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   color: Colors.amber[200],
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 40),
                   onPressed: () {
-                    _saveForm(context, newModel);
+                    data['category'] = _typeSelected;
+                    _saveForm(context);
                   },
                 ),
               ),
-              sceneBanner == null
+              tutBanner == null
                   ? SizedBox(
-                      height: 250,
+                      height: 150,
+                      child: CircularProgressIndicator(),
                     )
                   : Container(
-                      height: 250,
+                      height: 150,
                       child: AdWidget(
-                        ad: sceneBanner,
+                        ad: tutBanner,
                       ),
                     ),
             ],

@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onikiri_ui/DataProvider/DataUploader.dart';
+import 'package:onikiri_ui/Input%20Screens/ProjectFile_Submission_Screen.dart';
 import 'package:onikiri_ui/Widgets/WebView_Screen.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 
@@ -56,6 +58,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => AdMob(),
         ),
+        ChangeNotifierProvider(
+          create: (ctx) => DataUploadProvider(),
+        ),
       ],
       child: MaterialApp(
         title: 'MegaLinks',
@@ -85,6 +90,7 @@ class MyApp extends StatelessWidget {
               ScenePackSubmitionScreen(),
           AnimeDataSubmitionScreen.routName: (ctx) =>
               AnimeDataSubmitionScreen(),
+          PfSubmissionScreen.routName: (ctx) => PfSubmissionScreen(),
         },
       ),
     );

@@ -24,6 +24,7 @@ class AdState {
 //ca-app-pub-4498385082552578/7308896539
   String get scenePackSubmitionAdUnit =>
       ""; //ca-app-pub-9593982606370172/4304347291 ca-app-pub-4498385082552578/8908725143
+
   String get tutorialSubmitionAdUnit =>
       "ca-app-pub-4498385082552578/8908725143"; //ca-app-pub-9593982606370172/5408463835
 

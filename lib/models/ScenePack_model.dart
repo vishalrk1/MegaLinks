@@ -1,8 +1,8 @@
 class ScenePackModel {
-  final String title;
-  final String image;
-  final String link;
-  final String credit;
+  String title;
+  String image;
+  String link;
+  String credit;
 
   ScenePackModel({
     this.title,
@@ -13,10 +13,11 @@ class ScenePackModel {
 
   factory ScenePackModel.fromJson(Map<String, dynamic> json) {
     return ScenePackModel(
-      title: json['title'],
-      image: json['image'],
+      title: json['title'] ?? 'Not Available',
+      image: json['image'] ??
+          'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png',
       link: json['link'],
-      credit: json['credit'],
+      credit: json['credit'] ?? 'None',
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:onikiri_ui/Input%20Screens/ProjectFile_Submission_Screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../Input%20Screens/AnimeData_Submition_Form.dart';
@@ -151,46 +152,8 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                     subtitle: Text('link required'),
                     trailing: IconButton(
                       onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            content: Text(
-                                'Submiting project Files is not avaliable yet, We are working on it till then you can dm us on instagram we will add your project files'),
-                            actions: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  TextButton(
-                                    child: Text(
-                                      'Contact Us',
-                                      style: TextStyle(
-                                          color: Colors.purple, fontSize: 15),
-                                    ),
-                                    onPressed: () {
-                                      _launchInBrowser(_igLink1);
-                                      Navigator.of(context)
-                                          .pushReplacementNamed(
-                                              DataSubmitScreen.routName);
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text(
-                                      'Okay',
-                                      style: TextStyle(
-                                          color: Colors.purple, fontSize: 15),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pushReplacementNamed(
-                                              DataSubmitScreen.routName);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
+                        Navigator.of(context).pushReplacement(CustomRoute(
+                            builder: (ctx) => PfSubmissionScreen()));
                       },
                       icon: Icon(Icons.arrow_forward_ios),
                     ),
