@@ -5,10 +5,10 @@ class ScenePackModel {
   String credit;
 
   ScenePackModel({
-    this.title,
-    this.image,
-    this.link,
-    this.credit,
+    required this.title,
+    required this.image,
+    required this.link,
+    required this.credit,
   });
 
   factory ScenePackModel.fromJson(Map<String, dynamic> json) {

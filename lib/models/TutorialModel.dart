@@ -3,7 +3,8 @@ class TutorialModel {
   final String title;
   final String category;
 
-  TutorialModel({this.link, this.title, this.category});
+  TutorialModel(
+      {required this.link, required this.title, required this.category});
 
   factory TutorialModel.fromJson(Map<String, dynamic> json) {
     return TutorialModel(

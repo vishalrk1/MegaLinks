@@ -37,7 +37,7 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
     super.dispose();
   }
 
-  CollectionReference _ref;
+  late CollectionReference _ref;
   @override
   void initState() {
     super.initState();
@@ -45,11 +45,11 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
   }
 
   void _saveForm() {
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
@@ -109,7 +109,7 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.center,
                       colors: <Color>[
-                        Colors.purpleAccent[100],
+                        Colors.purpleAccent[100]!,
                         Colors.transparent,
                       ]),
                 ),
@@ -185,7 +185,7 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                             data['name'] = value;
                           },
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please Entre Something';
                             }
                             return null;
@@ -207,7 +207,7 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                             data['feedback'] = value;
                           },
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please Entre Something';
                             }
                             return null;

@@ -3,5 +3,6 @@ class Category {
   final String info;
   final String image;
 
-  const Category({this.title, this.info, this.image});
+  const Category(
+      {required this.title, required this.info, required this.image});
 }

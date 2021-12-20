@@ -5,7 +5,7 @@ import 'package:onikiri_ui/models/PresetPack_Model.dart';
 class PreSetCard extends StatelessWidget {
   final PresetPackModel preset;
 
-  PreSetCard({this.preset});
+  PreSetCard({required this.preset});
 
   @override
   Widget build(BuildContext context) {

@@ -32,7 +32,7 @@ class _TutorialsScrenState extends State<TutorialsScren> {
   @override
   Widget build(BuildContext context) {
     final Category loadedData =
-        ModalRoute.of(context).settings.arguments as Category;
+        ModalRoute.of(context)!.settings.arguments as Category;
     final dataProvider = Provider.of<DataProvider>(context);
     List<TutorialModel> tutList =
         Provider.of<DataProvider>(context).tutorialsList;

@@ -22,7 +22,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final url = ModalRoute.of(context).settings.arguments as String;
+    final url = ModalRoute.of(context)!.settings.arguments as String;
     return WebviewScaffold(
       appBar: AppBar(
         title: Text("MegaLink",

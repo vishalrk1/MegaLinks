@@ -3,13 +3,14 @@ class FeedBackModel {
   final String feedBack;
   final String bug;
 
-  FeedBackModel({this.name, this.feedBack, this.bug});
+  FeedBackModel(
+      {required this.name, required this.feedBack, required this.bug});
 
   factory FeedBackModel.fromJson(Map<String, dynamic> json) {
     return FeedBackModel(
-      name: json['name'],
-      feedBack: json['feedback'],
-      bug: json['bug'],
+      name: json['name'] ?? '',
+      feedBack: json['feedback'] ?? '',
+      bug: json['bug'] ?? '',
     );
   }
 }

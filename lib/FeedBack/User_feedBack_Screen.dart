@@ -61,7 +61,7 @@ class FeedBackCard extends StatelessWidget {
   final String feedback;
   final String name;
 
-  FeedBackCard({this.feedback, this.name});
+  FeedBackCard({required this.feedback, required this.name});
 
   @override
   Widget build(BuildContext context) {

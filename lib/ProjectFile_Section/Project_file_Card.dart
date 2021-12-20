@@ -1,46 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:onikiri_ui/Colors.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 import 'package:onikiri_ui/adds/ad_state.dart';
 import 'package:onikiri_ui/helpers/Url_Launcher.dart';
 import 'package:onikiri_ui/models/PfModel.dart';
 import 'package:provider/provider.dart';
 
+import '../main.dart';
+
 class ProjectFileCard extends StatefulWidget {
   final PfModel projectFile;
-  ProjectFileCard({this.projectFile});
+  ProjectFileCard({required this.projectFile});
 
   @override
   _ProjectFileCardState createState() => _ProjectFileCardState();
 }
 
 class _ProjectFileCardState extends State<ProjectFileCard> {
-  InterstitialAd _interstitialAd;
-// interstial add...........................................................................................
+// loading ads .......................................................................
+
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdReady = false;
+  int _numInterstitialLoadAttempts = 1;
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final adState = Provider.of<AdState>(context);
-    final adProvider = Provider.of<AdMob>(context);
-    adState.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
+  void initState() {
+    super.initState();
+    _createInterstitialAd();
+  }
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdMob().interstitialAd,
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            print('$ad loaded');
+            _interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            _interstitialAd!.setImmersiveMode(true);
+            _isInterstitialAdReady = true;
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            print('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            _interstitialAd = null;
+            _isInterstitialAdReady = false;
+            if (_numInterstitialLoadAttempts <= maxFailedLoadAttempts) {
+              _createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd == null) {
+      print('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          print('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        print('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        _createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        print('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        _createInterstitialAd();
       },
     );
+    _interstitialAd!.show();
+    _interstitialAd = null;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _interstitialAd!.dispose();
   }
 
   @override
@@ -114,8 +153,8 @@ class _ProjectFileCardState extends State<ProjectFileCard> {
                       onPressed: () {
                         UrlLauncher()
                             .launchInBrowser(widget.projectFile.pfLink);
-                        if (_interstitialAd.show() != null) {
-                          _interstitialAd.show();
+                        if (_isInterstitialAdReady == true) {
+                          _showInterstitialAd();
                         }
                       },
                       shape: RoundedRectangleBorder(

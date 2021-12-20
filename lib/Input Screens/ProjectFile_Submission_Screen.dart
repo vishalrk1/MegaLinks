@@ -10,7 +10,7 @@ import 'SubmitData_Screen.dart';
 
 class PfSubmissionScreen extends StatefulWidget {
   static const routName = '/pf-submission';
-  PfSubmissionScreen({Key key}) : super(key: key);
+  PfSubmissionScreen({Key? key}) : super(key: key);
 
   @override
   _PfSubmissionScreenState createState() => _PfSubmissionScreenState();
@@ -23,8 +23,8 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
   final _creditFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   String _typeSelected = '';
-  BannerAd tutBanner;
-  InterstitialAd _interstitialAd;
+  late final BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
 
   var _isLoading = false;
 
@@ -67,6 +67,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
     _editlinkFocusNode.dispose();
     _pflinkFocusNode.dispose();
     _creditFocusNode.dispose();
+    _bannerAd.dispose();
     super.dispose();
   }
 
@@ -75,20 +76,19 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
     final dataUploader =
         Provider.of<DataUploadProvider>(context, listen: false);
 
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
     dataUploader.uploadProjectFile(data).then(
           (value) => showDialog(
             context: context,
-            builder: (ctx) => SubmitedAlertDialog(
-              showAd: _interstitialAd,
-            ),
+            builder: (ctx) => SubmitedAlertDialog(),
+            barrierDismissible: false,
           ),
         );
     setState(() {
@@ -100,38 +100,26 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final adState = Provider.of<AdState>(context);
     final adProvider = Provider.of<AdMob>(context);
-    adState.initialization.then((status) {
-      setState(() {
-        tutBanner = BannerAd(
-          adUnitId: adProvider.bannerAd,
-          size: AdSize.banner,
-          request: AdRequest(),
-          listener: adState.adListener,
-        )..load();
-      });
-    });
-
-    final adState2 = Provider.of<AdState>(context);
-    adState2.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
+    _bannerAd = BannerAd(
+      adUnitId: adProvider.bannerAd,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
     );
+
+    _bannerAd.load();
   }
 
   @override
@@ -148,7 +136,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
         ),
         backgroundColor: Color(0xFF7A9BEE),
         elevation: 0.0,
-        title: Text('Tutorials',
+        title: Text('Project Files',
             style: TextStyle(
                 fontFamily: 'Montserrat', fontSize: 18.0, color: Colors.white)),
         centerTitle: true,
@@ -170,7 +158,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
               Padding(
                 padding: EdgeInsets.only(top: 25),
                 child: Text(
-                  'Submit Tutorial Links',
+                  'Submit Project Files',
                   style: TextStyle(
                       fontFamily: 'Montserrat',
                       color: Colors.black,
@@ -192,7 +180,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
                   data['title'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Something';
                   }
                   return null;
@@ -213,7 +201,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
                   data['editlink'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') && !value.startsWith('https')) {
@@ -234,7 +222,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
                   data['pflink'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') && !value.startsWith('https')) {
@@ -252,7 +240,7 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
                   data['credit'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Something';
                   }
                   return null;
@@ -306,15 +294,15 @@ class _PfSubmissionScreenState extends State<PfSubmissionScreen> {
                   },
                 ),
               ),
-              tutBanner == null
+              _isBannerAdReady == false
                   ? SizedBox(
                       height: 150,
-                      child: CircularProgressIndicator(),
+                      child: Center(child: CircularProgressIndicator()),
                     )
                   : Container(
                       height: 150,
                       child: AdWidget(
-                        ad: tutBanner,
+                        ad: _bannerAd,
                       ),
                     ),
             ],

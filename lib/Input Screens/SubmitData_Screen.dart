@@ -58,7 +58,7 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.center,
                       colors: <Color>[
-                        Colors.purpleAccent[100],
+                        Colors.purpleAccent[100]!,
                         Colors.transparent,
                       ]),
                 ),
@@ -99,8 +99,12 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                         subtitle: Text('Character name, link required'),
                         trailing: IconButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacement(CustomRoute(
-                                builder: (ctx) => ScenePackSubmitionScreen()));
+                            Navigator.of(context).pushReplacement(
+                              CustomRoute(
+                                builder: (ctx) => ScenePackSubmitionScreen(),
+                                settings: RouteSettings(),
+                              ),
+                            );
                           },
                           icon: Icon(Icons.arrow_forward_ios),
                         ),
@@ -118,8 +122,12 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                     subtitle: Text('channel name, youtube link required'),
                     trailing: IconButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(CustomRoute(
-                            builder: (ctx) => TutorialSubmitionScreen()));
+                        Navigator.of(context).pushReplacement(
+                          CustomRoute(
+                            builder: (ctx) => TutorialSubmitionScreen(),
+                            settings: RouteSettings(),
+                          ),
+                        );
                       },
                       icon: Icon(Icons.arrow_forward_ios),
                     ),
@@ -135,8 +143,12 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                     subtitle: Text('link required'),
                     trailing: IconButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(CustomRoute(
-                            builder: (ctx) => AnimeDataSubmitionScreen()));
+                        Navigator.of(context).pushReplacement(
+                          CustomRoute(
+                            builder: (ctx) => AnimeDataSubmitionScreen(),
+                            settings: RouteSettings(),
+                          ),
+                        );
                       },
                       icon: Icon(Icons.arrow_forward_ios),
                     ),
@@ -152,8 +164,12 @@ class _DataSubmitScreenState extends State<DataSubmitScreen> {
                     subtitle: Text('link required'),
                     trailing: IconButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(CustomRoute(
-                            builder: (ctx) => PfSubmissionScreen()));
+                        Navigator.of(context).pushReplacement(
+                          CustomRoute(
+                            builder: (ctx) => PfSubmissionScreen(),
+                            settings: RouteSettings(),
+                          ),
+                        );
                       },
                       icon: Icon(Icons.arrow_forward_ios),
                     ),

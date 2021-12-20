@@ -5,7 +5,10 @@ import 'package:onikiri_ui/HomePage/homePage_screen.dart';
 import 'package:onikiri_ui/Input%20Screens/SubmitData_Screen.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 import 'package:onikiri_ui/adds/ad_state.dart';
+import 'package:onikiri_ui/helpers/Submit_Sucessful_Dialog.dart';
 import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class AnimeDataSubmitionScreen extends StatefulWidget {
   static const routName = '/animedata-form';
@@ -18,8 +21,8 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
   final _titleFocusNode = FocusNode();
   final _linkFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
-  BannerAd animeBanner;
-  InterstitialAd _interstitialAd;
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
 
   var _isLoading = false;
 
@@ -28,14 +31,7 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
     'link': '',
   };
 
-  @override
-  void dispose() {
-    _titleFocusNode.dispose();
-    _linkFocusNode.dispose();
-    super.dispose();
-  }
-
-  CollectionReference _ref;
+  late CollectionReference _ref;
   @override
   void initState() {
     super.initState();
@@ -43,36 +39,20 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
   }
 
   void _saveForm() {
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
     _ref.add(data).then(
       (value) {
-        // Navigator.of(context).pop();
         showDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Submited successfully'),
-            content: Text(
-                """Thank you for helping us and sharing this with everyone. we will add your data shortly"""),
-            actions: <Widget>[
-              // ignore: deprecated_member_use
-              FlatButton(
-                  onPressed: () {
-                    if (_interstitialAd.show() != null) {
-                      _interstitialAd.show();
-                    }
-                    Navigator.of(context)
-                        .pushReplacementNamed(HomePageScreen.routeName);
-                  },
-                  child: Text('Okay'))
-            ],
-          ),
+          builder: (ctx) => SubmitedAlertDialog(),
+          barrierDismissible: false,
         );
       },
     );
@@ -82,41 +62,37 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
   }
 
 // field for ad.....................................................................................
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final adState1 = Provider.of<AdState>(context);
     final adProvider = Provider.of<AdMob>(context);
-    adState1.initialization.then((status) {
-      setState(() {
-        animeBanner = BannerAd(
-          adUnitId: adProvider.bannerAd,
-          size: AdSize.largeBanner,
-          request: AdRequest(),
-          listener: adState1.adListener,
-        )..load();
-      });
-    });
-
-    final adState2 = Provider.of<AdState>(context);
-    adState2.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
+    _bannerAd = BannerAd(
+      adUnitId: adProvider.bannerAd,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
     );
+
+    _bannerAd.load();
+  }
+
+  @override
+  void dispose() {
+    _titleFocusNode.dispose();
+    _linkFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -177,7 +153,7 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
                   data['anime name'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Something';
                   }
                   return null;
@@ -195,7 +171,7 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
                   data['link'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') && !value.startsWith('https')) {
@@ -232,14 +208,17 @@ class _AnimeDataSubmitionScreenState extends State<AnimeDataSubmitionScreen> {
                   },
                 ),
               ),
-              animeBanner == null
+              _isBannerAdReady == false
                   ? SizedBox(
                       height: 250,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     )
                   : Container(
                       height: 250,
                       child: AdWidget(
-                        ad: animeBanner,
+                        ad: _bannerAd,
                       ),
                     ),
             ],

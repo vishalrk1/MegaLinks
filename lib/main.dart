@@ -29,6 +29,8 @@ import '../Preset%20Packs/Paid%20Preset%20packs/Paid_PresetPacks_Screen.dart';
 import '../Preset%20Packs/PresetPacks_Tabs_Screen.dart';
 import '../Preset%20Packs/Selected_PresetPack_Screen.dart';
 
+const int maxFailedLoadAttempts = 3;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 // add plugin inilitization.............................................................................

@@ -11,7 +11,7 @@ import 'package:onikiri_ui/models/TutorialModel.dart';
 class DataProvider with ChangeNotifier {
   bool isLoding = true;
   bool isError = false;
-  String errorMessage;
+  late String errorMessage;
   List<ScenePackModel> scenePackList = [];
   List<TutorialModel> tutorialsList = [];
   List<AnimeModel> animeRawList = [];
@@ -29,7 +29,8 @@ class DataProvider with ChangeNotifier {
           await FirebaseFirestore.instance.collection(SCENE_PACKS).get();
       List<ScenePackModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        ScenePackModel scenePack = ScenePackModel.fromJson(doc.data());
+        ScenePackModel scenePack =
+            ScenePackModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(scenePack);
       });
       scenePackList = items;
@@ -55,7 +56,8 @@ class DataProvider with ChangeNotifier {
           .get();
       List<TutorialModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        TutorialModel tut = TutorialModel.fromJson(doc.data());
+        TutorialModel tut =
+            TutorialModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(tut);
       });
       tutorialsList = items;
@@ -79,7 +81,8 @@ class DataProvider with ChangeNotifier {
           await FirebaseFirestore.instance.collection(ANIME_RAWS).get();
       List<AnimeModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        AnimeModel raw = AnimeModel.fromJson(doc.data());
+        AnimeModel raw =
+            AnimeModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(raw);
       });
       animeRawList = items;
@@ -105,7 +108,7 @@ class DataProvider with ChangeNotifier {
           .get();
       List<PfModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        PfModel file = PfModel.fromJson(doc.data());
+        PfModel file = PfModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(file);
       });
       projectFileList = items;
@@ -129,7 +132,8 @@ class DataProvider with ChangeNotifier {
           await FirebaseFirestore.instance.collection(FEEDBACK).get();
       List<FeedBackModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        FeedBackModel feedBack = FeedBackModel.fromJson(doc.data());
+        FeedBackModel feedBack =
+            FeedBackModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(feedBack);
       });
       feedBacksList = items;
@@ -155,7 +159,8 @@ class DataProvider with ChangeNotifier {
           .get();
       List<PresetPackModel> items = [];
       ref.docs.forEach((DocumentSnapshot doc) {
-        PresetPackModel pack = PresetPackModel.fromJson(doc.data());
+        PresetPackModel pack =
+            PresetPackModel.fromJson(doc.data() as Map<String, dynamic>);
         items.add(pack);
       });
       presetList = items;

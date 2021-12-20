@@ -19,7 +19,7 @@ class SelectedPresetPackScreen extends StatefulWidget {
 }
 
 class _SelectedPresetPackScreenState extends State<SelectedPresetPackScreen> {
-  BannerAd banner;
+  late BannerAd banner;
 
   // field for ad.....................................................................................
   @override
@@ -42,7 +42,7 @@ class _SelectedPresetPackScreenState extends State<SelectedPresetPackScreen> {
   @override
   Widget build(BuildContext context) {
     final presetPack =
-        ModalRoute.of(context).settings.arguments as PresetPackModel;
+        ModalRoute.of(context)!.settings.arguments as PresetPackModel;
     final dataProvide = Provider.of<DataProvider>(context);
     return Scaffold(
       backgroundColor: Colors.purple[50], //Color(0xFF7A9BEE)
@@ -76,7 +76,7 @@ class _SelectedPresetPackScreenState extends State<SelectedPresetPackScreen> {
                       "Enjoy your preset pack!!",
                       style: Theme.of(context)
                           .textTheme
-                          .subtitle2
+                          .subtitle2!
                           .copyWith(fontSize: 15),
                     ),
                   ),

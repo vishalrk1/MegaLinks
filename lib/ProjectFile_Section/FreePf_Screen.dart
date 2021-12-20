@@ -1,6 +1,5 @@
 import 'package:auto_animated/auto_animated.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:onikiri_ui/DataProvider/DataProvider.dart';
 import 'package:onikiri_ui/ProjectFile_Section/Project_file_Card.dart';
 import 'package:onikiri_ui/models/PfModel.dart';
@@ -19,14 +18,14 @@ class FreePfScreen extends StatefulWidget {
 class _FreePfScreenState extends State<FreePfScreen> {
   String _typeSelected = 'After Effects';
 
-  Future<void> getPfData({String category}) async {
+  Future<void> getPfData({required String category}) async {
     await Provider.of<DataProvider>(context, listen: false)
         .getProjectFileata(software: category);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Category loadedData = ModalRoute.of(context).settings.arguments
+    final Category loadedData = ModalRoute.of(context)!.settings.arguments
         as Category; // data passed through push routes
     final List<PfModel> pfList =
         Provider.of<DataProvider>(context).projectFileList;

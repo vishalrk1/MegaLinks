@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:onikiri_ui/DataProvider/DataUploader.dart';
-import 'package:onikiri_ui/HomePage/homePage_screen.dart';
 import 'package:onikiri_ui/Input%20Screens/SubmitData_Screen.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
 import 'package:onikiri_ui/adds/ad_state.dart';
-import 'package:onikiri_ui/models/ScenePack_model.dart';
+import 'package:onikiri_ui/helpers/Submit_Sucessful_Dialog.dart';
 import 'package:provider/provider.dart';
 
 class ScenePackSubmitionScreen extends StatefulWidget {
@@ -21,9 +19,8 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
   final _imageFocusNode = FocusNode();
   final _linkFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
-  BannerAd sceneBanner;
-  InterstitialAd _interstitialAd;
-  ScenePackModel newModel;
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
 
   var _isLoading = false;
 
@@ -38,24 +35,18 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
   void dispose() {
     _titleFocusNode.dispose();
     _linkFocusNode.dispose();
+    _bannerAd.dispose();
     super.dispose();
   }
 
-  CollectionReference _ref;
-  @override
-  void initState() {
-    super.initState();
-    _ref = FirebaseFirestore.instance.collection('SubmitedData');
-  }
-
-  void _saveForm(BuildContext context, ScenePackModel sceneModel) {
+  void _saveForm(BuildContext context) {
     final uploadProvider =
         Provider.of<DataUploadProvider>(context, listen: false);
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
@@ -64,52 +55,11 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
         (value) {
           showDialog(
             context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text('Submited successfully'),
-              content: Text(
-                  """Thank you for helping us and sharing your packs with everyone. our mods will add your pack shortly"""),
-              actions: <Widget>[
-                // ignore: deprecated_member_use
-                FlatButton(
-                    onPressed: () {
-                      if (_interstitialAd.show() != null) {
-                        _interstitialAd.show();
-                      }
-                      Navigator.of(context)
-                          .pushReplacementNamed(HomePageScreen.routeName);
-                    },
-                    child: Text('Okay'))
-              ],
-            ),
+            builder: (ctx) => SubmitedAlertDialog(),
+            barrierDismissible: false,
           );
         },
       );
-
-    // _ref.add(data).then(
-    //   (value) {
-    //     // Navigator.of(context).pop();
-    //     showDialog(
-    //       context: context,
-    //       builder: (ctx) => AlertDialog(
-    //         title: Text('Submited successfully'),
-    //         content: Text(
-    //             """Thank you for helping us and sharing your packs with everyone. our mods will add your pack shortly"""),
-    //         actions: <Widget>[
-    //           // ignore: deprecated_member_use
-    //           FlatButton(
-    //               onPressed: () {
-    //                 if (_interstitialAd.show() != null) {
-    //                   _interstitialAd.show();
-    //                 }
-    //                 Navigator.of(context)
-    //                     .pushReplacementNamed(HomePageScreen.routeName);
-    //               },
-    //               child: Text('Okay'))
-    //         ],
-    //       ),
-    //     );
-    //   },
-    // );
     setState(() {
       _isLoading = false;
     });
@@ -119,38 +69,26 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final adState1 = Provider.of<AdState>(context);
     final adProvider = Provider.of<AdMob>(context);
-    adState1.initialization.then((status) {
-      setState(() {
-        sceneBanner = BannerAd(
-          adUnitId: adProvider.bannerAd,
-          size: AdSize.largeBanner,
-          request: AdRequest(),
-          listener: adState1.adListener,
-        )..load();
-      });
-    });
-
-    final adState2 = Provider.of<AdState>(context);
-    adState2.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
+    _bannerAd = BannerAd(
+      adUnitId: adProvider.bannerAd,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
     );
+
+    _bannerAd.load();
   }
 
   @override
@@ -211,7 +149,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   data['title'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Something';
                   }
                   return null;
@@ -233,7 +171,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   // newModel.link = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') && !value.startsWith('https')) {
@@ -254,7 +192,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   FocusScope.of(context).requestFocus(_linkFocusNode);
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') && !value.startsWith('https')) {
@@ -281,7 +219,7 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   data['credit'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Credits for this Pack';
                   }
                   return null;
@@ -310,18 +248,21 @@ class _ScenePackSubmitionScreenState extends State<ScenePackSubmitionScreen> {
                   color: Colors.amber[200],
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 40),
                   onPressed: () {
-                    _saveForm(context, newModel);
+                    _saveForm(context);
                   },
                 ),
               ),
-              sceneBanner == null
+              _isBannerAdReady == false
                   ? SizedBox(
                       height: 250,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     )
                   : Container(
                       height: 250,
                       child: AdWidget(
-                        ad: sceneBanner,
+                        ad: _bannerAd,
                       ),
                     ),
             ],

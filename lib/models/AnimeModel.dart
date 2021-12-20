@@ -6,9 +6,9 @@ class AnimeModel {
   final String link;
 
   const AnimeModel({
-    this.tital,
-    this.description,
-    this.link,
+    required this.tital,
+    required this.description,
+    required this.link,
   });
 
   factory AnimeModel.fromJson(Map<String, dynamic> json) {

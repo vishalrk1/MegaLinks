@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SearchOptions {
   final String title;
-  SearchOptions({this.title});
+  SearchOptions({required this.title});
 }
 
 class TitlesList with ChangeNotifier {

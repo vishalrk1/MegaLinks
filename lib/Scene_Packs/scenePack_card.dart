@@ -1,47 +1,83 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:onikiri_ui/Colors.dart';
 import 'package:onikiri_ui/adds/ad_Id.dart';
-import 'package:onikiri_ui/adds/ad_state.dart';
 import 'package:onikiri_ui/helpers/Url_Launcher.dart';
 import 'package:onikiri_ui/models/ScenePack_model.dart';
-import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class ScenePackCard extends StatefulWidget {
   final ScenePackModel scenePack;
-  ScenePackCard({this.scenePack});
+  ScenePackCard({required this.scenePack});
 
   @override
   _ScenePackCardState createState() => _ScenePackCardState();
 }
 
 class _ScenePackCardState extends State<ScenePackCard> {
-  InterstitialAd _interstitialAd;
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdReady = false;
+  int _numInterstitialLoadAttempts = 1;
 
-// loading ad.....................................................................................
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final adState = Provider.of<AdState>(context);
-    final adProvider = Provider.of<AdMob>(context);
-    adState.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
+  void initState() {
+    super.initState();
+    _createInterstitialAd();
+  }
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdMob().interstitialAd,
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            print('$ad loaded');
+            _interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            _interstitialAd!.setImmersiveMode(true);
+            _isInterstitialAdReady = true;
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            print('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            _interstitialAd = null;
+            _isInterstitialAdReady = false;
+            if (_numInterstitialLoadAttempts <= maxFailedLoadAttempts) {
+              _createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd == null) {
+      print('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          print('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        print('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        _createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        print('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        _createInterstitialAd();
       },
     );
+    _interstitialAd!.show();
+    _interstitialAd = null;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _interstitialAd!.dispose();
   }
 
   @override
@@ -66,13 +102,18 @@ class _ScenePackCardState extends State<ScenePackCard> {
                       topLeft: Radius.circular(15),
                       topRight: Radius.circular(15),
                     ),
-                    child: img != null
-                        ? Image.network(
-                            widget.scenePack.image,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          )
-                        : Image.asset('assets/AboutHeader.jpg'),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.scenePack.image,
+                      placeholder: (context, url) =>
+                          Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Image.network(
+                        'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png',
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ],
               ),
@@ -116,7 +157,10 @@ class _ScenePackCardState extends State<ScenePackCard> {
                     RaisedButton(
                       onPressed: () {
                         UrlLauncher().launchInBrowser(widget.scenePack.link);
-                        _interstitialAd.show();
+                        // _interstitialAd.show();
+                        if (_isInterstitialAdReady == true) {
+                          _showInterstitialAd();
+                        }
                       },
                       shape: RoundedRectangleBorder(
                         borderRadius: new BorderRadius.circular(18.0),
@@ -136,40 +180,6 @@ class _ScenePackCardState extends State<ScenePackCard> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class GetLinkButton extends StatelessWidget {
-  const GetLinkButton({
-    Key key,
-    @required this.widget,
-    @required InterstitialAd interstitialAd,
-  })  : _interstitialAd = interstitialAd,
-        super(key: key);
-
-  final ScenePackCard widget;
-  final InterstitialAd _interstitialAd;
-
-  @override
-  Widget build(BuildContext context) {
-    // ignore: deprecated_member_use
-    return RaisedButton(
-      onPressed: () {
-        UrlLauncher().launchInBrowser(widget.scenePack.link);
-        if (_interstitialAd.show() != null) {
-          _interstitialAd.show();
-        }
-      },
-      shape: RoundedRectangleBorder(
-        borderRadius: new BorderRadius.circular(18.0),
-      ),
-      color: Colors.amber[200],
-      child: Text(
-        'Get Link ',
-        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-      ),
-      padding: EdgeInsets.all(15),
     );
   }
 }

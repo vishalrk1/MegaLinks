@@ -37,7 +37,7 @@ class AboutScreen extends StatelessWidget {
                       begin: Alignment.bottomCenter,
                       end: Alignment.center,
                       colors: <Color>[
-                        Colors.purpleAccent[100],
+                        Colors.purpleAccent[100]!,
                         Colors.transparent,
                       ]),
                 ),

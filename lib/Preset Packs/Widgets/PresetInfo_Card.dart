@@ -9,8 +9,8 @@ import 'Blue_Gradient_Button.dart';
 
 class PreSetInfoCard extends StatelessWidget {
   const PreSetInfoCard({
-    Key key,
-    @required this.presetPack,
+    Key? key,
+    required this.presetPack,
   }) : super(key: key);
 
   final PresetPackModel presetPack;

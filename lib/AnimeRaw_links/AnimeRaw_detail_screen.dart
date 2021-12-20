@@ -1,5 +1,4 @@
 import 'package:auto_animated/auto_animated.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:onikiri_ui/DataProvider/DataProvider.dart';
 import 'package:onikiri_ui/Widgets/AppDrawer.dart';
@@ -12,24 +11,15 @@ import 'Anime_InfoCard.dart';
 class AnimeRawDetailsPage extends StatefulWidget {
   static const routeName = '/animedetails-page';
 
-  // final heroTag;
-  // final title;
-  // final Details;
-  // //final List<Scource> avaibleRaws;
-
-  // AnimeRawDetailsPage({this.heroTag, this.title, this.Details});
-
   @override
   _AnimeRawDetailsPageState createState() => _AnimeRawDetailsPageState();
 }
 
 class _AnimeRawDetailsPageState extends State<AnimeRawDetailsPage> {
-  // var selectedCard = 'WEIGHT';
-
   @override
   Widget build(BuildContext context) {
     final Category loadedData =
-        ModalRoute.of(context).settings.arguments as Category;
+        ModalRoute.of(context)!.settings.arguments as Category;
     final dataProvider = Provider.of<DataProvider>(context);
     final List<AnimeModel> rawList =
         Provider.of<DataProvider>(context).animeRawList;

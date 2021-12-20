@@ -6,11 +6,11 @@ class PfModel {
   final String category;
 
   PfModel({
-    this.title,
-    this.pfLink,
-    this.editLink,
-    this.credit,
-    this.category,
+    required this.title,
+    required this.pfLink,
+    required this.editLink,
+    required this.credit,
+    required this.category,
   });
 
   factory PfModel.fromJson(Map<String, dynamic> json) {
@@ -18,8 +18,8 @@ class PfModel {
       title: json['title'],
       pfLink: json['pflink'],
       editLink: json['editlink'],
-      credit: json['credit'],
-      category: json['category'],
+      credit: json['credit'] ?? 'unknown',
+      category: json['category'] ?? 'After Effects',
     );
   }
 }

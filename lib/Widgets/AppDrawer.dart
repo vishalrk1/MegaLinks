@@ -115,8 +115,9 @@ class AppDrawer extends StatelessWidget {
 class Drawerbuttons extends StatelessWidget {
   final btnTitle;
   final Icon icon;
-  final Function onPressed;
-  const Drawerbuttons({Key key, this.icon, this.onPressed, this.btnTitle})
+  final VoidCallback onPressed;
+  const Drawerbuttons(
+      {Key? key, required this.icon, required this.onPressed, this.btnTitle})
       : super(key: key);
 
   @override

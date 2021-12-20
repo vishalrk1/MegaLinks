@@ -4,7 +4,7 @@ import 'package:onikiri_ui/Colors.dart';
 
 class HomeAnimatedText extends StatelessWidget {
   const HomeAnimatedText({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

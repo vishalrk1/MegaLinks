@@ -6,7 +6,7 @@ class BlueGredientButtom extends StatelessWidget {
   final String text;
   final Function() onPressed;
 
-  BlueGredientButtom({this.text, this.onPressed});
+  BlueGredientButtom({required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

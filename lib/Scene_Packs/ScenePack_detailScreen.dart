@@ -1,8 +1,5 @@
-import 'dart:ffi';
-
 import 'package:auto_animated/auto_animated.dart';
 import 'package:flutter/material.dart';
-import 'package:onikiri_ui/Colors.dart';
 import 'package:onikiri_ui/DataProvider/DataProvider.dart';
 import 'package:onikiri_ui/helpers/SearchBar.dart';
 import 'package:onikiri_ui/models/ScenePack_model.dart';
@@ -39,7 +36,7 @@ class _ScenePackScrenState extends State<ScenePackScren> {
   @override
   Widget build(BuildContext context) {
     final Category loadedData =
-        ModalRoute.of(context).settings.arguments as Category;
+        ModalRoute.of(context)!.settings.arguments as Category;
 
     List<ScenePackModel> spList =
         Provider.of<DataProvider>(context).scenePackList;

@@ -2,10 +2,8 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:onikiri_ui/FeedBack/User_feedBack_Screen.dart';
-import 'package:onikiri_ui/HomePage/homePage_screen.dart';
 import 'package:onikiri_ui/Widgets/AppDrawer.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:onikiri_ui/helpers/Submit_Sucessful_Dialog.dart';
 
 class PackRequestScreen extends StatefulWidget {
   static const routName = '/packrRequest-page';
@@ -34,20 +32,19 @@ class _PackRequestScreenState extends State<PackRequestScreen> {
     super.dispose();
   }
 
-  CollectionReference _ref;
+  late CollectionReference _ref;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _ref = FirebaseFirestore.instance.collection('PackRequest');
   }
 
   void _saveForm() {
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
@@ -56,19 +53,8 @@ class _PackRequestScreenState extends State<PackRequestScreen> {
         // Navigator.of(context).pop();
         showDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Submited successfully'),
-            content: Text("""We will look into your request"""),
-            actions: <Widget>[
-              // ignore: deprecated_member_use
-              FlatButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed(HomePageScreen.routeName);
-                  },
-                  child: Text('Okay'))
-            ],
-          ),
+          builder: (ctx) => SubmitedAlertDialog(),
+          barrierDismissible: false,
         );
       },
     );
@@ -103,7 +89,7 @@ class _PackRequestScreenState extends State<PackRequestScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.center,
                       colors: <Color>[
-                        Colors.purpleAccent[100],
+                        Colors.purpleAccent[100]!,
                         Colors.transparent,
                       ]),
                 ),
@@ -162,7 +148,7 @@ class _PackRequestScreenState extends State<PackRequestScreen> {
                             data['characterName'] = value;
                           },
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please Entre Something';
                             }
                             return null;
@@ -185,7 +171,7 @@ class _PackRequestScreenState extends State<PackRequestScreen> {
                             data['seriesName'] = value;
                           },
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please Entre Something';
                             }
                             return null;

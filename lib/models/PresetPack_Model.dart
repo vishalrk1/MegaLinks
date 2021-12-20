@@ -9,14 +9,14 @@ class PresetPackModel {
   final String category;
 
   PresetPackModel({
-    this.packName,
-    this.software,
-    this.contains,
-    this.igImage,
-    this.instagramId,
-    this.payhipLink,
-    this.price,
-    this.category,
+    required this.packName,
+    required this.software,
+    required this.contains,
+    required this.igImage,
+    required this.instagramId,
+    required this.payhipLink,
+    required this.price,
+    required this.category,
   });
 
   factory PresetPackModel.fromJson(Map<String, dynamic> json) {

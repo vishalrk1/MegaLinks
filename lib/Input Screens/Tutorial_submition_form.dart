@@ -19,8 +19,8 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
   final _linkFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   String _typeSelected = '';
-  BannerAd tutBanner;
-  InterstitialAd _interstitialAd;
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
 
   var _isLoading = false;
 
@@ -59,6 +59,7 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
   void dispose() {
     _titleFocusNode.dispose();
     _linkFocusNode.dispose();
+    _bannerAd.dispose();
     super.dispose();
   }
 
@@ -67,20 +68,19 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
     final dataUploader =
         Provider.of<DataUploadProvider>(context, listen: false);
 
-    final isValid = _form.currentState.validate();
+    final isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
     dataUploader.uploadTutorial(data).then(
           (value) => showDialog(
             context: context,
-            builder: (ctx) => SubmitedAlertDialog(
-              showAd: _interstitialAd,
-            ),
+            builder: (ctx) => SubmitedAlertDialog(),
+            barrierDismissible: false,
           ),
         );
     setState(() {
@@ -92,38 +92,26 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final adState = Provider.of<AdState>(context);
     final adProvider = Provider.of<AdMob>(context);
-    adState.initialization.then((status) {
-      setState(() {
-        tutBanner = BannerAd(
-          adUnitId: adProvider.bannerAd,
-          size: AdSize.largeBanner,
-          request: AdRequest(),
-          listener: adState.adListener,
-        )..load();
-      });
-    });
-
-    final adState2 = Provider.of<AdState>(context);
-    adState2.initialization.then(
-      (value) {
-        InterstitialAd.load(
-          adUnitId: adProvider.interstitialAd,
-          request: AdRequest(),
-          adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (InterstitialAd ad) {
-              // Keep a reference to the ad so you can show it later.
-              this._interstitialAd = ad;
-            },
-            onAdFailedToLoad: (LoadAdError error) {
-              print('InterstitialAd failed to load: $error');
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
+    _bannerAd = BannerAd(
+      adUnitId: adProvider.bannerAd,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
     );
+
+    _bannerAd.load();
   }
 
   @override
@@ -184,7 +172,7 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
                   data['title'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Please Entre Something';
                   }
                   return null;
@@ -205,7 +193,7 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
                   data['link'] = value;
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'Invalid Link';
                   }
                   if (!value.startsWith('http') &&
@@ -264,15 +252,15 @@ class _TutorialSubmitionScreenState extends State<TutorialSubmitionScreen> {
                   },
                 ),
               ),
-              tutBanner == null
+              _isBannerAdReady == false
                   ? SizedBox(
                       height: 250,
-                      child: CircularProgressIndicator(),
+                      child: Center(child: CircularProgressIndicator()),
                     )
                   : Container(
                       height: 250,
                       child: AdWidget(
-                        ad: tutBanner,
+                        ad: _bannerAd,
                       ),
                     ),
             ],

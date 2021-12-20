@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../AnimeRaw_links/AnimeRaw_detail_screen.dart';
-
 class CardInfo extends StatelessWidget {
   final String imgPath;
   final String title;
   final String description;
 
-  CardInfo({this.imgPath, this.title, this.description});
+  CardInfo(
+      {required this.imgPath, required this.title, required this.description});
 
   @override
   Widget build(BuildContext context) {

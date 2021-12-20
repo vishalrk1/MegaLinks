@@ -13,7 +13,7 @@ class PresetPackTabScreen extends StatefulWidget {
 }
 
 class _PresetPackTabScreenState extends State<PresetPackTabScreen> {
-  Future<void> getPresetPacks({String category}) async {
+  Future<void> getPresetPacks({required String category}) async {
     await Provider.of<DataProvider>(context, listen: false)
         .getPresetData(category: category);
   }

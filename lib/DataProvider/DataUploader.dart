@@ -7,7 +7,7 @@ import 'FireBase_Constants.dart';
 class DataUploadProvider with ChangeNotifier {
   bool isLoding = true;
   bool isError = false;
-  String errorMessage;
+  late String errorMessage;
 
   Future<void> uploadScenePack(Map<String, dynamic> inputData) async {
     try {
